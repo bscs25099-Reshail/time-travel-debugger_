@@ -45,29 +45,64 @@ class Stack
 public:
     // Implement these functions:
     Stack()
-    { // initialize the stack
+    { 
+        top=nullptr;
+        count=0;
     }
     void push(const T &val)
     {
+        if(count==MAX_STACK_DEPTH){
+            throw overflow_error("The stack limt is reached.\n");
+        }
+        Node * n=new Node;
+        n->data=val;
+
+        n->next=top;
+        top=n;
+        count++;
 
         // pushes the value on the stack if max limit is not reached yet.
     }
     T pop()
     {
+        if(count==0){
+            throw underflow_error("The stack is Empty.\n");
+        }
+        Node *n=top->next;
+        T val=top->data;
+        delete top;
+        top=n;
+        count--;
+        return val;
         // pop the top value on the stack
     }
     T &peek()
     {
+        if(count==0){
+            throw underflow_error("The stack is Empty.\n");
+        }
+        return top->data;
+
         // returns the top value on the stack
     }
     bool isEmpty()
     {
+        return count==0;
     }
     int32_t depth()
     {
+        return count;
     }
     int32_t snapshot_into(T out[], int32_t maxLen)
     {
+        int ct_out=0;
+        Node * temp=top;
+        while(temp!=nullptr && ct_out <maxLen){
+            out[ct_out]=temp->data;
+            ct_out++;
+            temp=temp->next;
+        }
+        return ct_out;
         // copies every frame, top to bottom in the array given as a parameter
         // this is what buildSnapshot() call, returns count written
     }
@@ -91,16 +126,35 @@ public:
     // Implement these functions
     Timeline()
     {
+        head=tail=nullptr;
+        stepCount=0;
     }
     void record(Snapshot *s)
     {
+        TimelineNode * node=new TimelineNode;
+        node->data=s;
+        node->next=nullptr;
+        node->prev=nullptr;
+
+        if(head==nullptr){
+            head=tail=node;
+            stepCount++;
+            return;
+        }
+        tail->next=node;
+        node->prev=tail;
+        tail=tail->next;
+        stepCount++;
+
         // add record in the timeline
     }
     TimelineNode *begin()
     {
+        return head;
     }
     int32_t getStepCount()
     {
+        return stepCount;
     }
 };
 
@@ -156,15 +210,43 @@ struct PendingPatch
 // PASS 0x0: READING source.bin + VALIDITY CHECK
 bool readSourceLine(ifstream &in, string &out)
 {
+    string newline;
+    while(getline(in,newline)){
+        bool flag=true;
+        //used for checking if line is blank or not
+
+        for(int i=0;i<newline.length();i++){
+            if(newline[i]!=' ' && newline[i]!='\t'){
+                flag=false;
+                break;
+            }
+        }
+        if(!flag){
+            out =newline;
+            return true;
+        }
+
+        return false;
+    }
     // reads the next nonblank line
 }
 string firstWord(const string &line)
 {
+    string word1="";
+   for(int i=0;i<line.length();i++){
+
+    if(line[i]==' ' || line[i]=='\t'){
+        break;
+    }
+    word1+=line[i];
+   }
+
+   return  word1;
     // returns first word from the input string
 }
 string secondWord(const string &line)
 {
-    // returns the second word
+    
 }
 bool validateProgram(const char *sourcePath)
 {
